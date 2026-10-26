@@ -1,0 +1,303 @@
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   FlowDesk industrial design tokens (RGB triplets for alpha support)
+   ------------------------------------------------------------------ */
+:root {
+  --bg-0: 16 19 21;        /* #101315 primary background */
+  --bg-1: 25 29 32;        /* #191D20 secondary background */
+  --bg-2: 20 23 26;
+  --panel: 34 39 42;       /* #22272A panel surface */
+  --panel-raised: 43 48 51;/* #2B3033 raised surface */
+  --panel-sunk: 22 26 28;  /* recessed instrument wells */
+  --steel: 69 76 80;       /* #454C50 steel border */
+  --steel-dim: 50 56 60;
+  --steel-hi: 104 113 118;
+  --ink: 241 242 239;      /* #F1F2EF primary text */
+  --ink-2: 169 176 179;    /* #A9B0B3 secondary text */
+  --ink-3: 128 136 140;    /* tertiary — still ≥ 4.5:1 on panel */
+  --amber: 255 170 54;     /* #FFAA36 */
+  --amber-dim: 168 112 36;
+  --ok: 105 217 140;       /* #69D98C */
+  --info: 86 184 255;      /* #56B8FF */
+  --teal: 64 208 196;
+  --violet: 176 140 255;
+  --alert: 255 101 94;     /* #FF655E */
+
+  /* Metric series — the same colour means the same metric on every screen.
+     Validated as a categorical set on the panel surface (CVD ΔE ≥ 9.9, all ≥ 3:1).
+     Status colours (ok/amber/alert) are never used as series colours. */
+  --series-cpu: 61 143 224;    /* #3D8FE0 */
+  --series-write: 194 107 46;  /* #C26B2E */
+  --series-read: 42 161 152;   /* #2AA198 */
+  --series-mem: 180 85 201;    /* #B455C9 */
+  --series-gpu: 138 154 46;    /* #8A9A2E */
+
+  /* Trace event categories. Timeline markers are scatter-like, so only three
+     hues are used (validated all-pairs on panel + sunk surfaces, CVD ΔE ≥ 9.4);
+     the process family is neutral steel and told apart by marker shape. */
+  --cat-file: 57 135 229;      /* #3987E5 */
+  --cat-workload: 217 89 38;   /* #D95926 — FlowDesk application events */
+  --cat-disk: 25 158 112;      /* #199E70 */
+  --cat-process: 169 176 179;  /* neutral (= ink-2); diamond/triangle/square */
+
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.035) inset, 0 -1px 0 rgb(0 0 0 / 0.35) inset,
+    0 2px 6px rgb(0 0 0 / 0.35);
+  --shadow-sunk: 0 1px 2px rgb(0 0 0 / 0.55) inset, 0 -1px 0 rgb(255 255 255 / 0.03) inset;
+
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--bg-0));
+  color: rgb(var(--ink));
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+input,
+textarea,
+select,
+.selectable {
+  user-select: text;
+}
+
+/* Fine technical grid on the work area */
+.grid-floor {
+  background-color: rgb(var(--bg-0));
+  background-image: linear-gradient(rgb(255 255 255 / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.022) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--bg-1));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--steel-dim));
+  border: 2px solid rgb(var(--bg-1));
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--steel));
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--amber));
+  outline-offset: 1px;
+}
+
+@layer components {
+  /* Brushed-metal panel: faint horizontal grain + bevel */
+  .panel {
+    @apply relative border border-steel-dim bg-panel rounded;
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 40%),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.008) 0 1px, transparent 1px 3px);
+    box-shadow: var(--shadow-panel);
+  }
+  .panel-head {
+    @apply flex items-center gap-2 px-3 h-8 border-b border-steel-dim text-micro uppercase font-semibold text-ink-2;
+    background: linear-gradient(180deg, rgb(var(--panel-raised)), rgb(var(--panel)));
+  }
+  .panel-body {
+    @apply p-3;
+  }
+  .recess {
+    @apply bg-panel-sunk border border-black/40 rounded-sm;
+    box-shadow: var(--shadow-sunk);
+  }
+  /* Rivets — used only on panel heads that opt in */
+  .rivets::before,
+  .rivets::after {
+    content: "";
+    position: absolute;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgb(var(--steel-hi)), rgb(var(--steel-dim)) 70%);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+  }
+  .rivets::before {
+    left: 6px;
+  }
+  .rivets::after {
+    right: 6px;
+  }
+  .label {
+    @apply text-micro uppercase font-semibold text-ink-3;
+  }
+  .readout {
+    @apply font-mono tabular-nums;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-sm border text-[12px] font-medium
+      border-steel bg-panel-raised text-ink transition-[background,transform,border-color] duration-100
+      disabled:opacity-40 disabled:cursor-not-allowed;
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(0 0 0 / 0.1));
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+  .btn:not(:disabled):hover {
+    @apply border-steel-hi;
+  }
+  .btn:not(:disabled):active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-sunk);
+  }
+  .btn-amber {
+    @apply border-amber/70 text-amber;
+    background-color: rgb(var(--amber) / 0.1);
+  }
+  .btn-amber:not(:disabled):hover {
+    @apply border-amber;
+    background-color: rgb(var(--amber) / 0.16);
+  }
+  .btn-danger {
+    @apply border-alert/60 text-alert;
+    background-color: rgb(var(--alert) / 0.08);
+  }
+  .btn-sm {
+    @apply h-6 px-2 text-[11px];
+  }
+
+  .field {
+    @apply h-8 px-2 rounded-sm bg-panel-sunk border border-steel-dim text-ink font-mono text-[12px]
+      focus:border-amber/70 focus:outline-none;
+    box-shadow: var(--shadow-sunk);
+  }
+  select.field {
+    @apply font-sans pr-6;
+  }
+
+  .seg {
+    @apply inline-flex recess p-0.5 gap-0.5;
+  }
+  .seg > button {
+    @apply h-6 px-2 text-[11px] font-medium text-ink-2 rounded-sm;
+  }
+  .seg > button[aria-pressed="true"] {
+    @apply bg-panel-raised text-amber;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset;
+  }
+
+  /* Status lights */
+  .led {
+    @apply inline-block w-2 h-2 rounded-full shrink-0;
+    background: rgb(var(--steel));
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6);
+  }
+  .led-ok {
+    background: rgb(var(--ok));
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), 0 0 6px rgb(var(--ok) / 0.55);
+  }
+  .led-amber {
+    background: rgb(var(--amber));
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), 0 0 6px rgb(var(--amber) / 0.55);
+  }
+  .led-alert {
+    background: rgb(var(--alert));
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), 0 0 6px rgb(var(--alert) / 0.55);
+  }
+  .led-info {
+    background: rgb(var(--info));
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6), 0 0 6px rgb(var(--info) / 0.5);
+  }
+  .led-pulse {
+    animation: led-pulse 1.4s ease-in-out infinite;
+  }
+
+  .track {
+    @apply recess h-2 overflow-hidden;
+  }
+  .track > span {
+    @apply block h-full;
+    background: linear-gradient(90deg, rgb(var(--amber-dim)), rgb(var(--amber)));
+    transition: width 300ms ease-out;
+  }
+
+  .tbl {
+    @apply w-full text-[12px] border-collapse;
+  }
+  .tbl th {
+    @apply sticky top-0 z-10 text-left label px-2 h-7 bg-panel-raised border-b border-steel-dim whitespace-nowrap;
+  }
+  .tbl td {
+    @apply px-2 h-7 border-b border-steel-dim/50 whitespace-nowrap;
+  }
+  .tbl tbody tr:hover {
+    background: rgb(255 255 255 / 0.025);
+  }
+
+  .sim-badge {
+    @apply inline-flex items-center gap-1 px-1.5 h-5 rounded-sm border border-violet/50 text-violet text-micro uppercase font-semibold;
+    background: rgb(var(--violet) / 0.08);
+  }
+  .live-badge {
+    @apply inline-flex items-center gap-1 px-1.5 h-5 rounded-sm border border-ok/40 text-ok text-micro uppercase font-semibold;
+    background: rgb(var(--ok) / 0.07);
+  }
+}
+
+/* Pipeline connector: a dashed conduit; dashes travel only while .flowing */
+.conduit {
+  background-image: linear-gradient(90deg, rgb(var(--steel)) 50%, transparent 50%);
+  background-size: 10px 2px;
+  background-repeat: repeat-x;
+  background-position: 0 center;
+}
+.conduit.flowing {
+  background-image: linear-gradient(90deg, rgb(var(--amber)) 50%, transparent 50%);
+  animation: conduit-flow 0.7s linear infinite;
+}
+
+@keyframes conduit-flow {
+  to {
+    background-position: 10px center;
+  }
+}
+@keyframes led-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+/* User-level override from Settings */
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
